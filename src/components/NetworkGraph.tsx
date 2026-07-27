@@ -87,18 +87,47 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Rete Bayesiana</h2>
+      {network && reversals && reversals.length > 0 && (
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '16px', fontSize: '0.85rem', flexWrap: 'wrap' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ef4444', fontWeight: 'bold' }}>
+            <span style={{ display: 'inline-block', width: '20px', height: '3px', background: '#ef4444', borderBottom: '2px dashed #ef4444' }}></span> Archi Invertiti (Rossi)
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#3b82f6', fontWeight: 'bold' }}>
+            <span style={{ display: 'inline-block', width: '20px', height: '3px', background: '#3b82f6', borderBottom: '2px dashed #3b82f6' }}></span> Archi Aggiunti (Blu)
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
+            <span style={{ display: 'inline-block', width: '20px', height: '2px', background: '#475569' }}></span> Archi Originali
+          </span>
+        </div>
+      )}
       <svg width="600" height="400" className={styles.svg}>
-        {/* 1. Disegno degli archi (frecce di dipendenza condizionale, con evidenziazione se invertiti) */}
+        {/* 1. Disegno degli archi (frecce di dipendenza condizionale, rossi se invertiti, blu se aggiunti) */}
         {edgesToRender.map((edge, i) => {
           const from = NODES[edge.from as keyof typeof NODES];
           const to = NODES[edge.to as keyof typeof NODES];
           if (!from || !to) return null;
 
           // Verifica se questo specifico arco è stato invertito dall'Evidence Integration
-          const isReversed = reversals?.some(r => r.from === edge.from && r.to === edge.to);
-          const strokeColor = isReversed ? '#00e5ff' : '#475569'; // azzurro brillante se invertito, slate-600 se originale
-          const strokeWidth = isReversed ? '3' : '2';
-          const markerId = isReversed ? 'url(#arrowhead-reversed)' : 'url(#arrowhead)';
+          const isReversed = reversals?.some(r => (r.to === edge.from && r.from === edge.to) || (r.from === edge.from && r.to === edge.to));
+          const isInitial = EDGES.some(e => e.from === edge.from && e.to === edge.to);
+          const isAdded = !isInitial && !isReversed;
+
+          let strokeColor = '#475569';
+          let strokeWidth = '2';
+          let markerId = 'url(#arrowhead)';
+          let strokeDasharray = 'none';
+
+          if (isReversed) {
+            strokeColor = '#ef4444'; // rosso per gli archi invertiti
+            strokeWidth = '3';
+            markerId = 'url(#arrowhead-reversed)';
+            strokeDasharray = '6 3';
+          } else if (isAdded) {
+            strokeColor = '#3b82f6'; // blu per gli archi aggiunti
+            strokeWidth = '3';
+            markerId = 'url(#arrowhead-added)';
+            strokeDasharray = '4 2';
+          }
 
           return (
             <line
@@ -109,7 +138,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
               y2={to.y}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
-              strokeDasharray={isReversed ? '6 3' : 'none'}
+              strokeDasharray={strokeDasharray}
               markerEnd={markerId}
             />
           );
@@ -121,7 +150,10 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
             <polygon points="0 0, 10 3.5, 0 7" fill="#475569" />
           </marker>
           <marker id="arrowhead-reversed" markerWidth="10" markerHeight="7" refX="25" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#00e5ff" />
+            <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+          </marker>
+          <marker id="arrowhead-added" markerWidth="10" markerHeight="7" refX="25" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
           </marker>
         </defs>
 

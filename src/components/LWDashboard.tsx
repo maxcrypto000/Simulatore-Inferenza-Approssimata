@@ -72,7 +72,7 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Cruscotto LW</h2>
-      
+
       {/* Sezione per impostare Query e Evidenze (Filtro forzato) */}
       <div className={styles.configSection}>
         <h3>Impostazioni Simulazione (LW)</h3>
@@ -91,7 +91,7 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
               </select>
             </div>
           </div>
-          
+
           {/* Lista Evidenze */}
           <div className={styles.configGroup}>
             <label className={styles.evidenceHeader}>
@@ -106,8 +106,8 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
               {evidences.length === 0 && <div className={styles.noEvidence}>Nessun filtro (accetta tutto)</div>}
               {evidences.map((ev, index) => (
                 <div key={index} className={styles.configInputs}>
-                  <select 
-                    value={ev.var} 
+                  <select
+                    value={ev.var}
                     onChange={(e) => handleUpdateEvidence(index, e.target.value as keyof Sample, ev.val)}
                   >
                     {VARIABLES.map(v => (
@@ -117,8 +117,8 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
                     ))}
                   </select>
                   <span> = </span>
-                  <select 
-                    value={ev.val ? 'true' : 'false'} 
+                  <select
+                    value={ev.val ? 'true' : 'false'}
                     onChange={(e) => handleUpdateEvidence(index, ev.var, e.target.value === 'true')}
                   >
                     <option value="true">Vero</option>
@@ -142,7 +142,7 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
               ⚡ Evidence Integration (Arc Reversal)
             </h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-              {isIntegrated 
+              {isIntegrated
                 ? 'Algoritmo di Shachter applicato: i nodi di evidenza sono diventati radici invertendo gli archi.'
                 : 'Inverti dinamicamente gli archi verso le evidenze per integrare le informazioni a priori nelle CPT.'}
             </p>
@@ -185,14 +185,17 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
         </div>
 
         {isIntegrated && reversals && reversals.length > 0 && (
-          <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '8px', fontSize: '0.85rem', color: '#cbd5e1', border: '1px solid rgba(0, 229, 255, 0.2)' }}>
-            <strong style={{ color: '#00e5ff' }}>Archi invertiti e CPT ricalcolate dinamicamente con il Teorema di Bayes:</strong>
+          <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '8px', fontSize: '0.85rem', color: '#cbd5e1', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+            🔴 Archi invertiti (<strong style={{ color: '#ef4444' }}>rossi</strong>):
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
               {reversals.map((rev, idx) => (
                 <span key={idx} style={{ background: 'rgba(0, 229, 255, 0.15)', border: '1px solid #00e5ff', padding: '4px 10px', borderRadius: '6px', color: '#00e5ff', fontWeight: '500' }}>
                   {rev.from} ➔ {rev.to} <small style={{ color: '#94a3b8' }}>(ora {rev.to} ➔ {rev.from})</small>
                 </span>
               ))}
+            </div>
+            <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#3b82f6' }}>
+              ℹ️ Gli eventuali archi <strong>blu </strong> indicano le nuove dipendenze (eredità dei genitori congiunti) create durante l&apos;inversione secondo l&apos;algoritmo di Shachter.
             </div>
           </div>
         )}
@@ -204,7 +207,7 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
           <div className={styles.statLabel}>Iterazioni</div>
           <div className={styles.statValue}>{stats.iterations}</div>
         </div>
-        
+
         <div className={styles.statCard}>
           <div className={styles.statLabel}>Somma Pesi Totale</div>
           <div className={`${styles.statValue} ${styles.textGreen}`}>{stats.totalWeight.toFixed(2)}</div>
