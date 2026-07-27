@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="grad-root" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80" />
+      <stop offset="100%" stop-color="#16a34a" />
+    </linearGradient>
+    <linearGradient id="grad-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#facc15" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <linearGradient id="grad-bottom" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f87171" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Sfondo Icona (Rounded Square modern app icon) -->
+  <rect width="100" height="100" rx="24" fill="url(#bg)" stroke="#334155" stroke-width="2" />
+
+  <!-- Archi Diretti (Dipendenze Probabilistiche) -->
+  <g stroke="#64748b" stroke-width="3.5" stroke-linecap="round" opacity="0.85">
+    <!-- Radice verso Sinistra -->
+    <line x1="50" y1="22" x2="25" y2="50" />
+    <!-- Radice verso Destra -->
+    <line x1="50" y1="22" x2="75" y2="50" />
+    <!-- Sinistra verso Fondo -->
+    <line x1="25" y1="50" x2="50" y2="78" />
+    <!-- Destra verso Fondo -->
+    <line x1="75" y1="50" x2="50" y2="78" />
+    <!-- Arco trasversale condizionale -->
+    <line x1="25" y1="50" x2="75" y2="50" stroke-dasharray="4 3" opacity="0.4" />
+  </g>
+
+  <!-- Nodi della Rete Bayesiana (con effetto Glow) -->
+  <!-- Nodo Radice (Top) -->
+  <circle cx="50" cy="22" r="11" fill="url(#grad-root)" filter="url(#glow)" stroke="#ffffff" stroke-width="1.5" />
+  
+  <!-- Nodo Sinistro -->
+  <circle cx="25" cy="50" r="10" fill="url(#grad-left)" filter="url(#glow)" stroke="#ffffff" stroke-width="1.5" />
+  
+  <!-- Nodo Destro -->
+  <circle cx="75" cy="50" r="10" fill="url(#grad-right)" filter="url(#glow)" stroke="#ffffff" stroke-width="1.5" />
+  
+  <!-- Nodo Foglia Target (Bottom) -->
+  <circle cx="50" cy="78" r="12" fill="url(#grad-bottom)" filter="url(#glow)" stroke="#ffffff" stroke-width="1.5" />
+
+  <!-- Punti luce di probabilità all'interno dei nodi -->
+  <circle cx="50" cy="22" r="3.5" fill="#ffffff" opacity="0.9" />
+  <circle cx="25" cy="50" r="3" fill="#ffffff" opacity="0.9" />
+  <circle cx="75" cy="50" r="3" fill="#ffffff" opacity="0.9" />
+  <circle cx="50" cy="78" r="4" fill="#ffffff" opacity="0.95" />
+</svg>
