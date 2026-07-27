@@ -8,6 +8,7 @@ import RejectionGate from '../components/RejectionGate';
 import Dashboard from '../components/Dashboard';
 import WeightContainer from '../components/WeightContainer';
 import LWDashboard from '../components/LWDashboard';
+import CPTViewer from '../components/CPTViewer';
 import { Play, Pause, StepForward, RotateCcw, ArrowRightLeft } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -83,6 +84,7 @@ function RejectionMode() {
           />
         </div>
       </div>
+      <CPTViewer isIntegrated={false} />
     </>
   );
 }
@@ -172,6 +174,7 @@ function LikelihoodMode() {
           />
         </div>
       </div>
+      <CPTViewer network={network} isIntegrated={isIntegrated} />
     </>
   );
 }

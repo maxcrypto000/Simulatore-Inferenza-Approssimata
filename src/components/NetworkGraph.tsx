@@ -31,10 +31,10 @@ interface NetworkGraphProps {
 const NODES = {
   ES: { id: 'ES', label: 'Estate', x: 300, y: 40 },
   EG: { id: 'EG', label: 'Egna', x: 150, y: 140 },
-  S:  { id: 'S',  label: 'Sole', x: 450, y: 140 },
-  L:  { id: 'L',  label: 'Letto Presto', x: 150, y: 240 },
-  A:  { id: 'A',  label: 'Amici Corrono', x: 450, y: 240 },
-  C:  { id: 'C',  label: 'Piero Corre', x: 300, y: 340 },
+  S: { id: 'S', label: 'Sole', x: 450, y: 140 },
+  L: { id: 'L', label: 'Letto Presto', x: 150, y: 240 },
+  A: { id: 'A', label: 'Amici Corrono', x: 450, y: 240 },
+  C: { id: 'C', label: 'Piero Corre', x: 300, y: 340 },
 };
 
 /**
@@ -45,10 +45,10 @@ const EDGES = [
   { from: 'ES', to: 'EG' }, // Egna dipende da Estate
   { from: 'ES', to: 'S' },  // Sole dipende da Estate
   { from: 'EG', to: 'L' },  // Letto presto dipende da Egna
-  { from: 'S',  to: 'A' },  // Amici corrono dipende da Sole
-  { from: 'L',  to: 'C' },  // Piero corre dipende da Letto
-  { from: 'A',  to: 'C' },  // Piero corre dipende da Amici
-  { from: 'S',  to: 'C' },  // Piero corre dipende dal Sole (arco diretto)
+  { from: 'S', to: 'A' },  // Amici corrono dipende da Sole
+  { from: 'L', to: 'C' },  // Piero corre dipende da Letto
+  { from: 'A', to: 'C' },  // Piero corre dipende da Amici
+  { from: 'S', to: 'C' },  // Piero corre dipende dal Sole (arco diretto)
 ];
 
 /**
@@ -56,7 +56,7 @@ const EDGES = [
  * e anima in tempo reale l'attivazione dei nodi in base ai valori estratti nel campione.
  */
 export default function NetworkGraph({ sample, animState, isAutoGenerating, mode = 'rejection', stepWeights, network, reversals }: NetworkGraphProps) {
-  
+
   // Se viene passata una rete dinamica (es. dopo Evidence Integration), ricaviamo gli archi dai nodi
   const edgesToRender = network
     ? network.nodes.flatMap(node => node.parents.map(p => ({ from: p, to: node.id })))
@@ -70,7 +70,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
    */
   const getNodeColor = (nodeId: keyof Sample) => {
     if (!sample) return '#334155'; // colore di default (slate-700)
-    
+
     const value = sample[nodeId];
     return value ? '#22c55e' : '#ef4444'; // verde per Vero, rosso per Falso
   };
@@ -86,7 +86,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>La Fabbrica dei Campioni (Rete Bayesiana)</h2>
+      <h2 className={styles.title}>Rete Bayesiana</h2>
       <svg width="600" height="400" className={styles.svg}>
         {/* 1. Disegno degli archi (frecce di dipendenza condizionale, con evidenziazione se invertiti) */}
         {edgesToRender.map((edge, i) => {
@@ -99,7 +99,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
           const strokeColor = isReversed ? '#00e5ff' : '#475569'; // azzurro brillante se invertito, slate-600 se originale
           const strokeWidth = isReversed ? '3' : '2';
           const markerId = isReversed ? 'url(#arrowhead-reversed)' : 'url(#arrowhead)';
-          
+
           return (
             <line
               key={`edge-${edge.from}-${edge.to}-${i}`}
@@ -129,13 +129,13 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
         {Object.values(NODES).map((node) => {
           const color = getNodeColor(node.id as keyof Sample);
           const glow = getGlow(node.id as keyof Sample);
-          
+
           return (
             <g key={node.id}>
               {/* Tooltip per il Likelihood Weighting: mostra la probabilità condizionata p_i moltiplicata per quel nodo */}
               {mode === 'likelihood' && sample && animState === 'evaluating' && !isAutoGenerating && stepWeights && stepWeights[node.id as keyof Sample] !== undefined && (
                 <foreignObject x={node.x - 50} y={node.y - 80} width="100" height="50">
-                  <motion.div 
+                  <motion.div
                     className={styles.lwTooltip}
                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -145,7 +145,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
                   </motion.div>
                 </foreignObject>
               )}
-              
+
               {/* Cerchio del nodo animato con Framer Motion */}
               <motion.circle
                 cx={node.x}
@@ -161,7 +161,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
                 transition={{ duration: isAutoGenerating ? 0 : 0.3 }}
                 style={{ filter: sample ? `drop-shadow(0px 0px 8px ${color})` : 'none' }}
               />
-              
+
               {/* Sigla identificativa all'interno del nodo (es. ES, EG, S...) */}
               <text
                 x={node.x}
@@ -174,7 +174,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
               >
                 {node.id}
               </text>
-              
+
               {/* Etichetta descrittiva esterna (es. Estate, Egna, Sole...) */}
               <text
                 x={node.x}

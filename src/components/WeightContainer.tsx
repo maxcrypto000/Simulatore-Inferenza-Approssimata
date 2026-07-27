@@ -24,13 +24,13 @@ interface WeightContainerProps {
 export default function WeightContainer({ weight, stepWeights, animState, isAutoGenerating }: WeightContainerProps) {
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Moltiplicatore di Peso (Nessuno scarto)</h2>
-      
+      <h2 className={styles.title}>Moltiplicatore di Peso</h2>
+
       <div className={styles.gateArea}>
         {/* Canale di ingresso del campione visualizzato */}
         <div className={styles.pathway}>
           {animState === 'done' && !isAutoGenerating && (
-            <motion.div 
+            <motion.div
               className={styles.sampleDot}
               initial={{ top: -30, opacity: 0 }}
               animate={{ top: 60, opacity: 1 }}
@@ -40,7 +40,7 @@ export default function WeightContainer({ weight, stepWeights, animState, isAuto
         </div>
 
         {/* Box che mostra il calcolo del peso accumulato w */}
-        <motion.div 
+        <motion.div
           className={styles.gateBox}
           animate={{
             borderColor: animState === 'done' ? '#eab308' : '#334155', // giallo dorato quando il calcolo è completato
@@ -49,7 +49,7 @@ export default function WeightContainer({ weight, stepWeights, animState, isAuto
           transition={{ duration: isAutoGenerating ? 0 : 0.3 }}
         >
           <h3>PESO CAMPIONE</h3>
-          
+
           {/* Mostra la scomposizione matematica del peso: 1.0 × P(E1=e1|Genitori) × P(E2=e2|Genitori)... */}
           {stepWeights && Object.keys(stepWeights).length > 0 && animState === 'done' && !isAutoGenerating && (
             <div className={styles.mathFormula}>
