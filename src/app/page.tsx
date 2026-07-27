@@ -9,7 +9,8 @@ import Dashboard from '../components/Dashboard';
 import WeightContainer from '../components/WeightContainer';
 import LWDashboard from '../components/LWDashboard';
 import CPTViewer from '../components/CPTViewer';
-import { Play, Pause, StepForward, RotateCcw, ArrowRightLeft } from 'lucide-react';
+import SimulationBar from '../components/SimulationBar';
+import { ArrowRightLeft } from 'lucide-react';
 import styles from './page.module.css';
 
 /**
@@ -34,29 +35,19 @@ function RejectionMode() {
 
   return (
     <>
-      {/* Barra dei pulsanti di controllo (Step singolo, Auto-generazione 10x/s, Reset) */}
-      <div className={styles.controls}>
-        <button
-          onClick={generateSingleSample}
-          disabled={isAutoGenerating || (animState !== 'idle' && animState !== 'done')}
-          className={styles.btnPrimary}
-        >
-          <StepForward size={18} /> Genera 1 Campione
-        </button>
-        <button
-          onClick={toggleAutoGeneration}
-          className={isAutoGenerating ? styles.btnDanger : styles.btnSuccess}
-        >
-          {isAutoGenerating ? (
-            <><Pause size={18} /> Pausa (10x/sec)</>
-          ) : (
-            <><Play size={18} /> Auto 10x/sec</>
-          )}
-        </button>
-        <button onClick={reset} className={styles.btnSecondary}>
-          <RotateCcw size={18} /> Reset
-        </button>
-      </div>
+      {/* Barra unificata sulla prima riga: pulsanti di controllo e selettore di Query ed Evidenze */}
+      <SimulationBar
+        queryVar={queryVar}
+        queryVal={queryVal}
+        evidences={evidences}
+        setConfig={setConfig}
+        onGenerateSingle={generateSingleSample}
+        onToggleAuto={toggleAutoGeneration}
+        onReset={reset}
+        isAutoGenerating={isAutoGenerating}
+        animState={animState}
+        isLW={false}
+      />
 
       {/* Griglia principale a 2 colonne: Grafo a sinistra, Filtro e Statistiche a destra */}
       <div className={styles.grid}>
@@ -116,29 +107,19 @@ function LikelihoodMode() {
 
   return (
     <>
-      {/* Barra dei pulsanti di controllo (Step singolo, Auto-generazione 10x/s, Reset) */}
-      <div className={styles.controls}>
-        <button
-          onClick={generateSingleSample}
-          disabled={isAutoGenerating || (animState !== 'idle' && animState !== 'done')}
-          className={styles.btnPrimary}
-        >
-          <StepForward size={18} /> Genera 1 Campione
-        </button>
-        <button
-          onClick={toggleAutoGeneration}
-          className={isAutoGenerating ? styles.btnDanger : styles.btnSuccess}
-        >
-          {isAutoGenerating ? (
-            <><Pause size={18} /> Pausa (10x/sec)</>
-          ) : (
-            <><Play size={18} /> Auto 10x/sec</>
-          )}
-        </button>
-        <button onClick={reset} className={styles.btnSecondary}>
-          <RotateCcw size={18} /> Reset
-        </button>
-      </div>
+      {/* Barra unificata sulla prima riga: pulsanti di controllo e selettore di Query ed Evidenze */}
+      <SimulationBar
+        queryVar={queryVar}
+        queryVal={queryVal}
+        evidences={evidences}
+        setConfig={setConfig}
+        onGenerateSingle={generateSingleSample}
+        onToggleAuto={toggleAutoGeneration}
+        onReset={reset}
+        isAutoGenerating={isAutoGenerating}
+        animState={animState}
+        isLW={true}
+      />
 
       {/* Griglia principale a 2 colonne per la modalità LW */}
       <div className={styles.grid}>
