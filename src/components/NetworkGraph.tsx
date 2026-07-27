@@ -3,8 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AnimationState } from '../hooks/useRejectionSampling';
-import { Sample } from '../lib/network';
-import { BayesianNetwork } from '../lib/evidenceIntegration';
+import { Sample, BayesianNetwork } from '../lib/network';
 import styles from './NetworkGraph.module.css';
 
 /**
@@ -16,7 +15,7 @@ interface NetworkGraphProps {
   isAutoGenerating: boolean;                                                 // Flag che indica se è attiva la generazione veloce
   mode?: 'rejection' | 'likelihood';                                         // Modalità di inferenza attiva
   stepWeights?: Partial<Record<keyof Sample, number>>;                       // Pesi intermedi di ogni nodo (per LW)
-  network?: BayesianNetwork;                                                 // Rete Bayesiana dinamica (per Evidence Integration)
+  network?: BayesianNetwork;                                                 // Rete Bayesiana dinamica (per Evidential Integration)
   reversals?: { from: string; to: string }[];                                // Storico archi invertiti da evidenziare
 }
 
@@ -57,7 +56,7 @@ const EDGES = [
  */
 export default function NetworkGraph({ sample, animState, isAutoGenerating, mode = 'rejection', stepWeights, network, reversals }: NetworkGraphProps) {
 
-  // Se viene passata una rete dinamica (es. dopo Evidence Integration), ricaviamo gli archi dai nodi
+  // Se viene passata una rete dinamica (es. dopo Evidential Integration), ricaviamo gli archi dai nodi
   const edgesToRender = network
     ? network.nodes.flatMap(node => node.parents.map(p => ({ from: p, to: node.id })))
     : EDGES;
@@ -107,7 +106,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
           const to = NODES[edge.to as keyof typeof NODES];
           if (!from || !to) return null;
 
-          // Verifica se questo specifico arco è stato invertito dall'Evidence Integration
+          // Verifica se questo specifico arco è stato invertito dall'Evidential Integration
           const isReversed = reversals?.some(r => (r.to === edge.from && r.from === edge.to) || (r.from === edge.from && r.to === edge.to));
           const isInitial = EDGES.some(e => e.from === edge.from && e.to === edge.to);
           const isAdded = !isInitial && !isReversed;

@@ -12,7 +12,7 @@ interface LWDashboardProps {
   queryVal: boolean;                                                            // Valore richiesto per la query
   evidences: EvidenceConfig[];                                                  // Evidenze forzate
   setConfig: (qVar: keyof Sample, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback di configurazione
-  isIntegrated?: boolean;                                                       // Flag che indica se Evidence Integration è attivo
+  isIntegrated?: boolean;                                                       // Flag che indica se Evidential Integration è attivo
   reversals?: { from: string; to: string }[];                                   // Storico degli archi invertiti
   applyEvidenceIntegration?: () => void;                                        // Funzione per applicare l'integrazione
   resetNetworkTopology?: () => void;                                            // Funzione per ripristinare la topologia
@@ -42,12 +42,12 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, isIn
     <div className={styles.container}>
       <h2 className={styles.title}>Cruscotto LW</h2>
 
-      {/* Sezione Evidence Integration (Arc Reversal / Shachter) */}
+      {/* Sezione Evidential Integration (Arc Reversal / Shachter) */}
       <div className={styles.configSection} style={{ border: isIntegrated ? '1px solid #00e5ff' : '1px solid #475569', background: isIntegrated ? 'rgba(0, 229, 255, 0.08)' : 'rgba(30, 41, 59, 0.5)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h3 style={{ margin: 0, color: isIntegrated ? '#00e5ff' : '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ⚡ Evidence Integration (Arc Reversal)
+              ⚡ Evidential Integration (Arc Reversal)
             </h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
               {isIntegrated
@@ -71,7 +71,7 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, isIn
                   transition: 'transform 0.2s',
                 }}
               >
-                Applica Evidence Integration
+                Applica Evidential Integration
               </button>
             ) : (
               <button

@@ -3,7 +3,7 @@
  * Condizionata (CPT) della Rete Bayesiana "Piero corre".
  * 
  * Questo modulo funge da sorgente unica di verità (Single Source of Truth) per tutti gli algoritmi
- * di inferenza (Rejection Sampling, Likelihood Weighting, Evidence Integration).
+ * di inferenza (Rejection Sampling, Likelihood Weighting, Evidential Integration).
  * Utilizza strutture dati generali per grafi orientati aciclici (DAG) e CPT canoniche.
  */
 

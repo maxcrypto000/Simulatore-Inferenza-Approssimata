@@ -72,7 +72,7 @@ export function generateLWSample(evidences: EvidenceConfig[], network: BayesianN
 
 /**
  * Wrapper per compatibilità con chiamate che passano prima la rete e poi le evidenze
- * (es. durante l'Evidence Integration in cui la rete viene trasformata dinamicamente).
+ * (es. durante l'Evidential Integration in cui la rete viene trasformata dinamicamente).
  * 
  * @param network Rete bayesiana dinamica
  * @param evidences Lista di evidenze

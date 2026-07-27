@@ -24,7 +24,7 @@ export type LWAnimationState = 'idle' | 'generating' | 'evaluating' | 'done';
 
 /**
  * Hook custom per la gestione dello stato e della logica di Likelihood Weighting (Pesatura della Verosimiglianza)
- * con supporto dinamico per Evidence Integration (Arc Reversal / Algoritmo di Shachter).
+ * con supporto dinamico per Evidential Integration (Arc Reversal / Algoritmo di Shachter).
  */
 export function useLikelihoodWeighting() {
   const [stats, setStats] = useState<LWStats>({ iterations: 0, totalWeight: 0, queryWeight: 0 });
@@ -37,7 +37,7 @@ export function useLikelihoodWeighting() {
   const [queryVal, setQueryVal] = useState<boolean>(true);
   const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: 'C', val: true }]);
   
-  // Stato dinamico del Grafo e delle CPT (per Evidence Integration)
+  // Stato dinamico del Grafo e delle CPT (per Evidential Integration)
   const [network, setNetwork] = useState<BayesianNetwork>(() => getInitialPieroNetwork());
   const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
   const [reversals, setReversals] = useState<{ from: string; to: string }[]>([]);
@@ -71,7 +71,7 @@ export function useLikelihoodWeighting() {
     
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Genera il campione sulla topologia corrente (originale o trasformata da Evidence Integration)
+    // Genera il campione sulla topologia corrente (originale o trasformata da Evidential Integration)
     const newResult = generateDynamicLWSample(network, evidences);
     setCurrentResult(newResult);
     
@@ -116,7 +116,7 @@ export function useLikelihoodWeighting() {
   }, [isAutoGenerating, generateFastSample]);
 
   /**
-   * Applica l'algoritmo di Evidence Integration (Arc Reversal di Shachter)
+   * Applica l'algoritmo di Evidential Integration (Arc Reversal di Shachter)
    * trasformando la topologia e ricalcolando dinamicamente le CPT.
    */
   const applyEvidenceIntegration = useCallback(() => {

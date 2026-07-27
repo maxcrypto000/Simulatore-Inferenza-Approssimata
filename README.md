@@ -1,9 +1,9 @@
-# 🧠 Simulatore di Inferenza Approssimata e Evidence Integration in Reti Bayesiane
+# 🧠 Simulatore di Inferenza Approssimata e Evidential Integration in Reti Bayesiane
 
 Un'applicazione web interattiva, ad alto impatto visivo e didattico, sviluppata in **Next.js**, **React** e **TypeScript** per la simulazione, la visualizzazione e l'analisi dei principali algoritmi di inferenza probabilistica approssimata su grafi orientati aciclici (DAG):
 1. 🗑️ **Rejection Sampling** (Campionamento con Rifiuto)
 2. ⚖️ **Likelihood Weighting** (Pesatura della Verosimiglianza)
-3. ⚡ **Evidence Integration via Arc Reversal** (Algoritmo di Shachter e Teorema di Bayes)
+3. ⚡ **Evidential Integration via Arc Reversal** (Algoritmo di Shachter e Teorema di Bayes)
 
 ---
 
@@ -33,10 +33,10 @@ Il Likelihood Weighting risolve il problema dello spreco computazionale evitando
 
 ---
 
-### 3. ⚡ Evidence Integration (Arc Reversal di Shachter)
+### 3. ⚡ Evidential Integration (Arc Reversal di Shachter)
 Anche nel Likelihood Weighting tradizionale, se le variabili di evidenza si trovano a fondo grafo (nodi foglia con molti genitori), il peso $w$ attribuito al campione può subire una forte varianza, rallentando la convergenza.
 
-L'**Evidence Integration** supera questo limite trasformando dinamicamente la topologia del grafo prima del campionamento. Utilizza l'**algoritmo di Arc Reversal di Shachter** per invertire iterativamente gli archi diretti verso i nodi di evidenza, trasformandoli in **nodi radice (senza genitori)**.
+L'**Evidential Integration** supera questo limite trasformando dinamicamente la topologia del grafo prima del campionamento. Utilizza l'**algoritmo di Arc Reversal di Shachter** per invertire iterativamente gli archi diretti verso i nodi di evidenza, trasformandoli in **nodi radice (senza genitori)**.
 
 #### Il Teorema di Shachter per l'Inversione dell'Arco $X \rightarrow Y$:
 1. **Topologia:** Si definisce l'insieme dei genitori congiunti $U = (\text{Pa}(X) \cup \text{Pa}(Y)) \setminus \{X\}$. Nel nuovo grafo, $Y$ avrà genitori $U$, mentre $X$ avrà genitori $U \cup \{Y\}$.
@@ -47,7 +47,7 @@ L'**Evidence Integration** supera questo limite trasformando dinamicamente la to
 4. **Teorema di Bayes (Divisione):** Si ricalcola la nuova CPT condizionata di $X$:
    $$P_{\text{new}}(X \mid Y, U) = \frac{\text{Joint}(X, Y \mid U)}{P_{\text{new}}(Y \mid U)}$$
 
-**Risultato visivo e computazionale:** Nella UI di Likelihood Weighting, cliccando su **"Applica Evidence Integration"**, le frecce del grafo SVG **si invertono fisicamente** illuminandosi di ciano (`#00e5ff`) e le tabelle CPT vengono ricalcolate al volo!
+**Risultato visivo e computazionale:** Nella UI di Likelihood Weighting, cliccando su **"Applica Evidential Integration"**, le frecce del grafo SVG **si invertono fisicamente** illuminandosi di ciano (`#00e5ff`) e le tabelle CPT vengono ricalcolate al volo!
 
 ---
 
@@ -89,13 +89,13 @@ src/
 │   └── evidenceIntegration.ts  # ⚡ Motore matematico puro di Arc Reversal (Teorema di Shachter e marginalizzazione di Bayes).
 ├── hooks/
 │   ├── useRejectionSampling.ts # Hook React per la gestione dello stato e delle animazioni del Rejection Sampling.
-│   └── useLikelihoodWeighting.ts # Hook React per Likelihood Weighting con supporto all'Evidence Integration.
+│   └── useLikelihoodWeighting.ts # Hook React per Likelihood Weighting con supporto all'Evidential Integration.
 ├── components/
 │   ├── NetworkGraph.tsx        # 🎨 Componente SVG che visualizza il DAG, l'illuminazione dei nodi in tempo reale e l'inversione fisica degli archi.
 │   ├── RejectionGate.tsx       # Animazione interattiva dello smistamento dei campioni tra cestino "Trash" e cesto "Accepted".
 │   ├── WeightContainer.tsx     # Breakdown visuale del moltiplicatore di verosimiglianza $w$.
 │   ├── Dashboard.tsx           # Cruscotto statistico di controllo per Rejection Sampling con grafico a ciambella.
-│   └── LWDashboard.tsx         # Cruscotto statistico per Likelihood Weighting con controlli per Evidence Integration.
+│   └── LWDashboard.tsx         # Cruscotto statistico per Likelihood Weighting con controlli per Evidential Integration.
 └── app/
     ├── page.tsx                # Pagina principale e switcher istantaneo tra le due modalità di inferenza.
     └── layout.tsx              # Layout radice del progetto Next.js.
@@ -132,5 +132,5 @@ Assicurati di avere [Node.js](https://nodejs.org/) (versione 18 o superiore) ins
 1. **Configura Query ed Evidenze:** Nel cruscotto a destra, seleziona la variabile che vuoi stimare (es. `C = Vero`) e aggiungi una o più evidenze come filtro (es. `S = Falso`, `ES = Vero`).
 2. **Modalità Passo-Passo (Genera 1 Campione):** Clicca sul pulsante per osservare l'animazione didattica: vedrai i nodi della rete illuminarsi in ordine topologico e il campione essere smistato (nel gate di rifiuto) o pesato (nel moltiplicatore di verosimiglianza).
 3. **Modalità Automatica ad Alta Velocità (Auto 10x/sec):** Clicca sul tasto play per generare 10 campioni al secondo in background e vedere la convergenza delle probabilità stimate verso il valore teorico in tempo reale.
-4. **Sperimenta l'Evidence Integration:** Passa alla modalità **Likelihood Weighting** e clicca sull'esclusivo pulsante **"Applica Evidence Integration"**. Osserva le frecce del grafo che puntano verso l'evidenza capovolgersi in tempo reale (colorandosi di ciano) e nota come il campionamento diventi immediatamente più stabile e informato a priori!
-5. **Confronto tra Algoritmi:** Prova a impostare un'evidenza molto rara (es. una combinazione sfavorevole) e avvia la modalità automatica. Nota come il **Rejection Sampling** riempia rapidamente il cesto "Trash" con alte percentuali di inefficienza, mentre il **Likelihood Weighting** (ancor più se potenziato con **Evidence Integration**) continui a sfruttare il 100% delle iterazioni senza alcuno spreco computazionale!
+4. **Sperimenta l'Evidential Integration:** Passa alla modalità **Likelihood Weighting** e clicca sull'esclusivo pulsante **"Applica Evidential Integration"**. Osserva le frecce del grafo che puntano verso l'evidenza capovolgersi in tempo reale (colorandosi di ciano) e nota come il campionamento diventi immediatamente più stabile e informato a priori!
+5. **Confronto tra Algoritmi:** Prova a impostare un'evidenza molto rara (es. una combinazione sfavorevole) e avvia la modalità automatica. Nota come il **Rejection Sampling** riempia rapidamente il cesto "Trash" con alte percentuali di inefficienza, mentre il **Likelihood Weighting** (ancor più se potenziato con **Evidential Integration**) continui a sfruttare il 100% delle iterazioni senza alcuno spreco computazionale!

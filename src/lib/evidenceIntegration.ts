@@ -1,5 +1,5 @@
 /**
- * Motore matematico per l'algoritmo di Evidence Integration (Arc Reversal in Reti Bayesiane).
+ * Motore matematico per l'algoritmo di Evidential Integration (Arc Reversal in Reti Bayesiane).
  * Implementa le operazioni di trasformazione su grafi orientati aciclici (DAG) e il ricalcolo dinamico
  * delle Conditional Probability Tables (CPT) tramite il Teorema di Bayes (algoritmo di Shachter).
  */
@@ -152,7 +152,7 @@ function canReverseArcWithoutCycle(network: BayesianNetwork, fromNode: string, t
 }
 
 /**
- * Algoritmo di Evidence Integration per Likelihood Weighting.
+ * Algoritmo di Evidential Integration per Likelihood Weighting.
  * Applica iterativamente l'inversione degli archi verso i nodi di evidenza finché
  * questi non diventano nodi radice (senza genitori), integrando le evidenze a priori.
  * 

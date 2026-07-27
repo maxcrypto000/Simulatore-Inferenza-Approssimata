@@ -20,7 +20,7 @@ const LABELS: Record<string, string> = {
 
 /**
  * Componente per visualizzare le Tabelle di Probabilità Condizionata (CPT) della Rete Bayesiana.
- * Rispecchia dinamicamente la topologia corrente (originale o trasformata dall'Evidence Integration).
+ * Rispecchia dinamicamente la topologia corrente (originale o trasformata dall'Evidential Integration).
  */
 export default function CPTViewer({ network = getInitialPieroNetwork(), isIntegrated = false }: CPTViewerProps) {
   const topOrder = getTopologicalOrder(network);
@@ -45,7 +45,7 @@ export default function CPTViewer({ network = getInitialPieroNetwork(), isIntegr
 
       {isIntegrated && (
         <div className={styles.banner}>
-          <strong>💡 Nota sull&apos;Evidence Integration:</strong>I nodi di evidenza sono stati trasformati in radici e Le CPT mostrate qui sotto sono state <strong>ricalcolate dinamicamente</strong>.
+          <strong>💡 Nota sull&apos;Evidential Integration:</strong>I nodi di evidenza sono stati trasformati in radici e Le CPT mostrate qui sotto sono state <strong>ricalcolate dinamicamente</strong>.
         </div>
       )}
 
