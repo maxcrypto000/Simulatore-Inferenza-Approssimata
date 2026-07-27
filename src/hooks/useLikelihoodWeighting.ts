@@ -1,6 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { generateLWSample, LWSampleResult } from '../lib/likelihoodWeighting';
-import { Sample, EvidenceConfig } from '../lib/inference';
+import { LWSampleResult } from '../lib/likelihoodWeighting';
+import { Sample, EvidenceConfig } from '../lib/network';
+import { 
+  BayesianNetwork, 
+  getInitialPieroNetwork, 
+  integrateEvidence, 
+  generateDynamicLWSample 
+} from '../lib/evidenceIntegration';
 
 /**
  * Statistiche accumulate durante la simulazione del Likelihood Weighting.
@@ -17,7 +23,8 @@ export type LWStats = {
 export type LWAnimationState = 'idle' | 'generating' | 'evaluating' | 'done';
 
 /**
- * Hook custom per la gestione dello stato e della logica di Likelihood Weighting (Pesatura della Verosimiglianza).
+ * Hook custom per la gestione dello stato e della logica di Likelihood Weighting (Pesatura della Verosimiglianza)
+ * con supporto dinamico per Evidence Integration (Arc Reversal / Algoritmo di Shachter).
  */
 export function useLikelihoodWeighting() {
   const [stats, setStats] = useState<LWStats>({ iterations: 0, totalWeight: 0, queryWeight: 0 });
@@ -30,16 +37,19 @@ export function useLikelihoodWeighting() {
   const [queryVal, setQueryVal] = useState<boolean>(true);
   const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: 'C', val: true }]);
   
+  // Stato dinamico del Grafo e delle CPT (per Evidence Integration)
+  const [network, setNetwork] = useState<BayesianNetwork>(() => getInitialPieroNetwork());
+  const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
+  const [reversals, setReversals] = useState<{ from: string; to: string }[]>([]);
+
   const autoGenRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Aggiorna le statistiche sommandole ai pesi accumulati.
-   * La probabilità stimata P(Query | Evidenze) si calcolerà come: queryWeight / totalWeight.
    */
   const updateStats = useCallback((result: LWSampleResult) => {
     setStats(prev => {
       const newTotalWeight = prev.totalWeight + result.weight;
-      // Se nel campione generato la variabile query corrisponde al valore cercato, sommiamo il suo peso
       const newQueryWeight = prev.queryWeight + ((result.sample[queryVar] === queryVal) ? result.weight : 0);
       
       return {
@@ -51,41 +61,36 @@ export function useLikelihoodWeighting() {
   }, [queryVar, queryVal]);
 
   /**
-   * Generazione di un singolo campione con pause per l'animazione visiva.
+   * Generazione di un singolo campione utilizzando il motore dinamico della rete bayesiana.
    */
   const generateSingleSample = useCallback(async () => {
     if (animState !== 'idle' && animState !== 'done') return;
 
     setAnimState('generating');
-    setCurrentResult(null); // Pulisce il risultato precedente
+    setCurrentResult(null);
     
-    // Breve pausa di reset della UI
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Genera il campione forzando le evidenze e calcolando il peso w
-    const newResult = generateLWSample(evidences);
+    // Genera il campione sulla topologia corrente (originale o trasformata da Evidence Integration)
+    const newResult = generateDynamicLWSample(network, evidences);
     setCurrentResult(newResult);
     
-    // Pausa per simulare il campionamento topologico visivo
     await new Promise(resolve => setTimeout(resolve, 800));
-    
     setAnimState('evaluating');
-    
-    // Pausa per mostrare il calcolo del moltiplicatore di peso e la formula nella UI
     await new Promise(resolve => setTimeout(resolve, 500));
     
     updateStats(newResult);
     setAnimState('done');
-  }, [animState, updateStats, evidences]);
+  }, [animState, updateStats, evidences, network]);
 
   /**
    * Generazione istantanea senza ritardi animati per la modalità ad alta velocità (10x/sec).
    */
   const generateFastSample = useCallback(() => {
-    const newResult = generateLWSample(evidences);
+    const newResult = generateDynamicLWSample(network, evidences);
     setCurrentResult(newResult);
     updateStats(newResult);
-  }, [updateStats, evidences]);
+  }, [updateStats, evidences, network]);
 
   /**
    * Attiva o disattiva il campionamento automatico continuo a 10 Hz.
@@ -96,7 +101,7 @@ export function useLikelihoodWeighting() {
 
   useEffect(() => {
     if (isAutoGenerating) {
-      setAnimState('idle'); // Disattiva animazioni complesse per garantire la fluidità del fast mode
+      setAnimState('idle');
       autoGenRef.current = setInterval(() => {
         generateFastSample();
       }, 100);
@@ -111,7 +116,40 @@ export function useLikelihoodWeighting() {
   }, [isAutoGenerating, generateFastSample]);
 
   /**
-   * Resetta i contatori di peso e iterazioni della simulazione LW.
+   * Applica l'algoritmo di Evidence Integration (Arc Reversal di Shachter)
+   * trasformando la topologia e ricalcolando dinamicamente le CPT.
+   */
+  const applyEvidenceIntegration = useCallback(() => {
+    const initialNet = getInitialPieroNetwork();
+    const { network: newNet, reversals: newReversals } = integrateEvidence(initialNet, evidences);
+    
+    setNetwork(newNet);
+    setReversals(newReversals);
+    setIsIntegrated(true);
+    
+    // Reset della simulazione per ripartire sulla nuova rete
+    setIsAutoGenerating(false);
+    setStats({ iterations: 0, totalWeight: 0, queryWeight: 0 });
+    setCurrentResult(null);
+    setAnimState('idle');
+  }, [evidences]);
+
+  /**
+   * Ripristina la topologia e le CPT originali della rete bayesiana.
+   */
+  const resetNetworkTopology = useCallback(() => {
+    setNetwork(getInitialPieroNetwork());
+    setReversals([]);
+    setIsIntegrated(false);
+    
+    setIsAutoGenerating(false);
+    setStats({ iterations: 0, totalWeight: 0, queryWeight: 0 });
+    setCurrentResult(null);
+    setAnimState('idle');
+  }, []);
+
+  /**
+   * Resetta i contatori di peso e iterazioni della simulazione LW senza cambiare la topologia.
    */
   const reset = useCallback(() => {
     setIsAutoGenerating(false);
@@ -127,7 +165,12 @@ export function useLikelihoodWeighting() {
     setQueryVar(newQueryVar);
     setQueryVal(newQueryVal);
     setEvidences(newEvidences);
-    // Reset automatico quando cambiano i parametri
+    
+    // Se cambiano le evidenze e la rete era integrata, ripristiniamo la rete iniziale per evitare stati incoerenti
+    setNetwork(getInitialPieroNetwork());
+    setReversals([]);
+    setIsIntegrated(false);
+
     setIsAutoGenerating(false);
     setStats({ iterations: 0, totalWeight: 0, queryWeight: 0 });
     setCurrentResult(null);
@@ -142,9 +185,14 @@ export function useLikelihoodWeighting() {
     queryVar,
     queryVal,
     evidences,
+    network,
+    isIntegrated,
+    reversals,
     generateSingleSample,
     toggleAutoGeneration,
     reset,
     setConfig,
+    applyEvidenceIntegration,
+    resetNetworkTopology,
   };
 }

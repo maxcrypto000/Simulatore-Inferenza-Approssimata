@@ -1,6 +1,6 @@
 import React from 'react';
 import { LWStats } from '../hooks/useLikelihoodWeighting';
-import { Sample, EvidenceConfig } from '../lib/inference';
+import { Sample, EvidenceConfig } from '../lib/network';
 import { Plus, X } from 'lucide-react';
 import styles from './Dashboard.module.css';
 
@@ -13,6 +13,10 @@ interface LWDashboardProps {
   queryVal: boolean;                                                            // Valore richiesto per la query
   evidences: EvidenceConfig[];                                                  // Evidenze forzate
   setConfig: (qVar: keyof Sample, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback di configurazione
+  isIntegrated?: boolean;                                                       // Flag che indica se Evidence Integration è attivo
+  reversals?: { from: string; to: string }[];                                   // Storico degli archi invertiti
+  applyEvidenceIntegration?: () => void;                                        // Funzione per applicare l'integrazione
+  resetNetworkTopology?: () => void;                                            // Funzione per ripristinare la topologia
 }
 
 const VARIABLES: (keyof Sample)[] = ['ES', 'EG', 'S', 'L', 'A', 'C'];
@@ -24,7 +28,7 @@ const VARIABLES: (keyof Sample)[] = ['ES', 'EG', 'S', 'L', 'A', 'C'];
  * - Somma dei pesi dove la query è verificata W_query
  * - Stima P(Query | Evidenze) = W_query / W
  */
-export default function LWDashboard({ stats, queryVar, queryVal, evidences, setConfig }: LWDashboardProps) {
+export default function LWDashboard({ stats, queryVar, queryVal, evidences, setConfig, isIntegrated, reversals, applyEvidenceIntegration, resetNetworkTopology }: LWDashboardProps) {
   // Calcolo della probabilità come media pesata: W_query / W_total
   const probabilityS = stats.totalWeight > 0 ? (stats.queryWeight / stats.totalWeight) : 0;
   const probabilityPercent = (probabilityS * 100).toFixed(1);
@@ -128,6 +132,70 @@ export default function LWDashboard({ stats, queryVar, queryVal, evidences, setC
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Sezione Evidence Integration (Arc Reversal / Shachter) */}
+      <div className={styles.configSection} style={{ border: isIntegrated ? '1px solid #00e5ff' : '1px solid #475569', background: isIntegrated ? 'rgba(0, 229, 255, 0.08)' : 'rgba(30, 41, 59, 0.5)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h3 style={{ margin: 0, color: isIntegrated ? '#00e5ff' : '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              ⚡ Evidence Integration (Arc Reversal)
+            </h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+              {isIntegrated 
+                ? 'Algoritmo di Shachter applicato: i nodi di evidenza sono diventati radici invertendo gli archi.'
+                : 'Inverti dinamicamente gli archi verso le evidenze per integrare le informazioni a priori nelle CPT.'}
+            </p>
+          </div>
+          <div>
+            {!isIntegrated ? (
+              <button
+                onClick={applyEvidenceIntegration}
+                style={{
+                  background: 'linear-gradient(135deg, #00e5ff 0%, #0088ff 100%)',
+                  color: '#0f172a',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0, 229, 255, 0.4)',
+                  transition: 'transform 0.2s',
+                }}
+              >
+                Applica Evidence Integration
+              </button>
+            ) : (
+              <button
+                onClick={resetNetworkTopology}
+                style={{
+                  background: 'transparent',
+                  color: '#ef4444',
+                  border: '1px solid #ef4444',
+                  fontWeight: '600',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                Reset Rete Originale
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isIntegrated && reversals && reversals.length > 0 && (
+          <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '8px', fontSize: '0.85rem', color: '#cbd5e1', border: '1px solid rgba(0, 229, 255, 0.2)' }}>
+            <strong style={{ color: '#00e5ff' }}>Archi invertiti e CPT ricalcolate dinamicamente con il Teorema di Bayes:</strong>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+              {reversals.map((rev, idx) => (
+                <span key={idx} style={{ background: 'rgba(0, 229, 255, 0.15)', border: '1px solid #00e5ff', padding: '4px 10px', borderRadius: '6px', color: '#00e5ff', fontWeight: '500' }}>
+                  {rev.from} ➔ {rev.to} <small style={{ color: '#94a3b8' }}>(ora {rev.to} ➔ {rev.from})</small>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Grid delle schede con i contatori dei Pesi */}

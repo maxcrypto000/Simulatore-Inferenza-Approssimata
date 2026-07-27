@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { generateSample, isSampleAccepted, Sample, EvidenceConfig } from '../lib/inference';
+import { generateSample, isSampleAccepted } from '../lib/inference';
+import { Sample, EvidenceConfig } from '../lib/network';
 
 /**
  * Statistiche in tempo reale per la simulazione del Rejection Sampling.

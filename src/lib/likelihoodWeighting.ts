@@ -1,14 +1,18 @@
+/**
+ * Modulo di inferenza per il Likelihood Weighting (Pesatura della Verosimiglianza).
+ * Utilizza la struttura dinamica della Rete Bayesiana e il calcolo topologico
+ * importati dal modulo centrale `network.ts`.
+ */
+
 import { 
   Sample, 
   EvidenceConfig,
-  flipCoin, 
-  P_ES, 
-  P_EG_given_ES, 
-  P_S_given_ES, 
-  P_L_given_EG, 
-  P_A_given_S, 
-  P_C_given_L_A_S 
-} from './inference';
+  BayesianNetwork,
+  getInitialPieroNetwork,
+  getTopologicalOrder,
+  getProbability,
+  flipCoin 
+} from './network';
 
 /**
  * Risultato della generazione di un singolo campione tramite Likelihood Weighting.
@@ -29,116 +33,51 @@ export interface LWSampleResult {
  *   2. Il peso globale `weight` del campione viene moltiplicato per la probabilità di osservare quel valore dati i suoi genitori attuali: w = w * P(E=e | Genitori).
  * - Quando si incontra una variabile NON di evidenza, la si campiona normalmente dalle sue CPT senza modificare il peso.
  * 
+ * L'algoritmo è 100% dinamico e percorre la rete in ordine topologico (Kahn's algorithm).
+ * 
  * @param evidences Lista delle evidenze (es. [{ var: 'C', val: true }])
+ * @param network La rete bayesiana su cui operare (opzionale, default: rete iniziale "Piero corre")
  * @returns Il campione generato, il peso totale calcolato e i pesi intermedi per l'animazione
  */
-export function generateLWSample(evidences: EvidenceConfig[]): LWSampleResult {
-  let weight = 1.0; // Inizializzazione del peso del campione a 1.0
+export function generateLWSample(evidences: EvidenceConfig[], network: BayesianNetwork = getInitialPieroNetwork()): LWSampleResult {
+  let weight = 1.0;
   const stepWeights: Partial<Record<keyof Sample, number>> = {};
-  
-  /**
-   * Funzione ausiliaria per verificare se una variabile è una variabile di evidenza e recuperarne il valore richiesto.
-   */
-  const getEvidenceVal = (nodeId: keyof Sample): boolean | undefined => {
+  const sampleData: Record<string, boolean> = {};
+
+  const topOrder = getTopologicalOrder(network);
+
+  for (const nodeId of topOrder) {
     const ev = evidences.find(e => e.var === nodeId);
-    return ev ? ev.val : undefined;
-  };
+    const pTrue = getProbability(network, nodeId, sampleData, true);
 
-  /* --------------------------------------------------------------------------
-   * 1. NODO RADICE: ES (Estate)
-   * -------------------------------------------------------------------------- */
-  const ES_ev = getEvidenceVal('ES');
-  let ES: boolean;
-  if (ES_ev !== undefined) {
-    // Il nodo è una variabile di evidenza -> fissiamo il valore e aggiorniamo il peso
-    ES = ES_ev;
-    const p = ES ? P_ES : (1 - P_ES);
-    weight *= p;
-    stepWeights['ES'] = p;
-  } else {
-    // Il nodo non è in evidenza -> campioniamo normalmente dalla probabilità a priori P(ES)
-    ES = flipCoin(P_ES);
+    if (ev !== undefined) {
+      // Nodo di evidenza -> fissiamo il valore all'osservazione
+      sampleData[nodeId] = ev.val;
+      const probVal = ev.val ? pTrue : (1.0 - pTrue);
+      weight *= probVal;
+      stepWeights[nodeId as keyof Sample] = probVal;
+    } else {
+      // Campionamento normale dalla probabilità condizionata (o a priori)
+      const val = flipCoin(pTrue);
+      sampleData[nodeId] = val;
+    }
   }
 
-  /* --------------------------------------------------------------------------
-   * 2. NODO FIGLIO: EG (Egna), dipendente da ES
-   * -------------------------------------------------------------------------- */
-  const EG_ev = getEvidenceVal('EG');
-  let EG: boolean;
-  const pEG = P_EG_given_ES[String(ES) as "true" | "false"];
-  if (EG_ev !== undefined) {
-    EG = EG_ev;
-    const p = EG ? pEG : (1 - pEG);
-    weight *= p;
-    stepWeights['EG'] = p;
-  } else {
-    EG = flipCoin(pEG);
-  }
-
-  /* --------------------------------------------------------------------------
-   * 3. NODO FIGLIO: S (Sole), dipendente da ES
-   * -------------------------------------------------------------------------- */
-  const S_ev = getEvidenceVal('S');
-  let S: boolean;
-  const pS = P_S_given_ES[String(ES) as "true" | "false"];
-  if (S_ev !== undefined) {
-    S = S_ev;
-    const p = S ? pS : (1 - pS);
-    weight *= p;
-    stepWeights['S'] = p;
-  } else {
-    S = flipCoin(pS);
-  }
-
-  /* --------------------------------------------------------------------------
-   * 4. NODO DI LIVELLO 2: L (Letto Presto), dipendente da EG
-   * -------------------------------------------------------------------------- */
-  const L_ev = getEvidenceVal('L');
-  let L: boolean;
-  const pL = P_L_given_EG[String(EG) as "true" | "false"];
-  if (L_ev !== undefined) {
-    L = L_ev;
-    const p = L ? pL : (1 - pL);
-    weight *= p;
-    stepWeights['L'] = p;
-  } else {
-    L = flipCoin(pL);
-  }
-
-  /* --------------------------------------------------------------------------
-   * 5. NODO DI LIVELLO 2: A (Amici corrono), dipendente da S
-   * -------------------------------------------------------------------------- */
-  const A_ev = getEvidenceVal('A');
-  let A: boolean;
-  const pA = P_A_given_S[String(S) as "true" | "false"];
-  if (A_ev !== undefined) {
-    A = A_ev;
-    const p = A ? pA : (1 - pA);
-    weight *= p;
-    stepWeights['A'] = p;
-  } else {
-    A = flipCoin(pA);
-  }
-
-  /* --------------------------------------------------------------------------
-   * 6. NODO FOGLIA: C (Piero corre), dipendente da L, A, S
-   * -------------------------------------------------------------------------- */
-  const C_ev = getEvidenceVal('C');
-  let C: boolean;
-  const pC = P_C_given_L_A_S(L, A, S);
-  if (C_ev !== undefined) {
-    C = C_ev;
-    const p = C ? pC : (1 - pC);
-    weight *= p;
-    stepWeights['C'] = p;
-  } else {
-    C = flipCoin(pC);
-  }
-
-  // Restituisce il campione con il suo peso finale accumulato e i singoli pesi di step
   return {
-    sample: { ES, EG, S, L, A, C },
+    sample: sampleData as unknown as Sample,
     weight,
-    stepWeights
+    stepWeights,
   };
+}
+
+/**
+ * Wrapper per compatibilità con chiamate che passano prima la rete e poi le evidenze
+ * (es. durante l'Evidence Integration in cui la rete viene trasformata dinamicamente).
+ * 
+ * @param network Rete bayesiana dinamica
+ * @param evidences Lista di evidenze
+ * @returns Risultato del campionamento LW
+ */
+export function generateDynamicLWSample(network: BayesianNetwork, evidences: EvidenceConfig[]): LWSampleResult {
+  return generateLWSample(evidences, network);
 }

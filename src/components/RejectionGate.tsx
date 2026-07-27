@@ -3,7 +3,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimationState } from '../hooks/useRejectionSampling';
-import { isSampleAccepted, Sample, EvidenceConfig } from '../lib/inference';
+import { isSampleAccepted } from '../lib/inference';
+import { Sample, EvidenceConfig } from '../lib/network';
 import styles from './RejectionGate.module.css';
 
 /**

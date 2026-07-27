@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { LWAnimationState } from '../hooks/useLikelihoodWeighting';
 import styles from './WeightContainer.module.css';
 
-import { Sample } from '../lib/inference';
+import { Sample } from '../lib/network';
 
 /**
  * Proprietà per il componente di visualizzazione del calcolo del peso (Likelihood Weighting).

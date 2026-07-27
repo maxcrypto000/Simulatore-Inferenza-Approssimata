@@ -101,10 +101,15 @@ function LikelihoodMode() {
     queryVar,
     queryVal,
     evidences,
+    network,
+    isIntegrated,
+    reversals,
     generateSingleSample,
     toggleAutoGeneration,
     reset,
     setConfig,
+    applyEvidenceIntegration,
+    resetNetworkTopology,
   } = useLikelihoodWeighting();
 
   return (
@@ -142,6 +147,8 @@ function LikelihoodMode() {
             isAutoGenerating={isAutoGenerating}
             mode="likelihood"
             stepWeights={currentResult?.stepWeights}
+            network={network}
+            reversals={reversals}
           />
         </div>
 
@@ -158,6 +165,10 @@ function LikelihoodMode() {
             queryVal={queryVal}
             evidences={evidences}
             setConfig={setConfig}
+            isIntegrated={isIntegrated}
+            reversals={reversals}
+            applyEvidenceIntegration={applyEvidenceIntegration}
+            resetNetworkTopology={resetNetworkTopology}
           />
         </div>
       </div>

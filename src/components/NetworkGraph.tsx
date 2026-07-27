@@ -3,7 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AnimationState } from '../hooks/useRejectionSampling';
-import { Sample } from '../lib/inference';
+import { Sample } from '../lib/network';
+import { BayesianNetwork } from '../lib/evidenceIntegration';
 import styles from './NetworkGraph.module.css';
 
 /**
@@ -15,6 +16,8 @@ interface NetworkGraphProps {
   isAutoGenerating: boolean;                                                 // Flag che indica se è attiva la generazione veloce
   mode?: 'rejection' | 'likelihood';                                         // Modalità di inferenza attiva
   stepWeights?: Partial<Record<keyof Sample, number>>;                       // Pesi intermedi di ogni nodo (per LW)
+  network?: BayesianNetwork;                                                 // Rete Bayesiana dinamica (per Evidence Integration)
+  reversals?: { from: string; to: string }[];                                // Storico archi invertiti da evidenziare
 }
 
 /**
@@ -52,8 +55,13 @@ const EDGES = [
  * Componente che disegna il grafo orientato aciclico (DAG) della rete bayesiana
  * e anima in tempo reale l'attivazione dei nodi in base ai valori estratti nel campione.
  */
-export default function NetworkGraph({ sample, animState, isAutoGenerating, mode = 'rejection', stepWeights }: NetworkGraphProps) {
+export default function NetworkGraph({ sample, animState, isAutoGenerating, mode = 'rejection', stepWeights, network, reversals }: NetworkGraphProps) {
   
+  // Se viene passata una rete dinamica (es. dopo Evidence Integration), ricaviamo gli archi dai nodi
+  const edgesToRender = network
+    ? network.nodes.flatMap(node => node.parents.map(p => ({ from: p, to: node.id })))
+    : EDGES;
+
   /**
    * Restituisce il colore del nodo in base al valore booleano nel campione attuale:
    * - Verde (#22c55e) se la variabile è Vera (true)
@@ -80,29 +88,40 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
     <div className={styles.container}>
       <h2 className={styles.title}>La Fabbrica dei Campioni (Rete Bayesiana)</h2>
       <svg width="600" height="400" className={styles.svg}>
-        {/* 1. Disegno degli archi (frecce di dipendenza condizionale) */}
-        {EDGES.map((edge, i) => {
+        {/* 1. Disegno degli archi (frecce di dipendenza condizionale, con evidenziazione se invertiti) */}
+        {edgesToRender.map((edge, i) => {
           const from = NODES[edge.from as keyof typeof NODES];
           const to = NODES[edge.to as keyof typeof NODES];
+          if (!from || !to) return null;
+
+          // Verifica se questo specifico arco è stato invertito dall'Evidence Integration
+          const isReversed = reversals?.some(r => r.from === edge.from && r.to === edge.to);
+          const strokeColor = isReversed ? '#00e5ff' : '#475569'; // azzurro brillante se invertito, slate-600 se originale
+          const strokeWidth = isReversed ? '3' : '2';
+          const markerId = isReversed ? 'url(#arrowhead-reversed)' : 'url(#arrowhead)';
           
           return (
             <line
-              key={`edge-${i}`}
+              key={`edge-${edge.from}-${edge.to}-${i}`}
               x1={from.x}
               y1={from.y}
               x2={to.x}
               y2={to.y}
-              stroke="#475569" // slate-600
-              strokeWidth="2"
-              markerEnd="url(#arrowhead)"
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+              strokeDasharray={isReversed ? '6 3' : 'none'}
+              markerEnd={markerId}
             />
           );
         })}
 
-        {/* Definizione del marcatore punta della freccia SVG */}
+        {/* Definizione dei marcatori punta della freccia SVG */}
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="25" refY="3.5" orient="auto">
             <polygon points="0 0, 10 3.5, 0 7" fill="#475569" />
+          </marker>
+          <marker id="arrowhead-reversed" markerWidth="10" markerHeight="7" refX="25" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#00e5ff" />
           </marker>
         </defs>
 

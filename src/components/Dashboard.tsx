@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SimulationStats } from '../hooks/useRejectionSampling';
-import { Sample, EvidenceConfig } from '../lib/inference';
+import { Sample, EvidenceConfig } from '../lib/network';
 import { Plus, X } from 'lucide-react';
 import styles from './Dashboard.module.css';
 
