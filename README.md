@@ -57,11 +57,11 @@ Il modello probabilistico implementato di default simula la decisione di un raga
 
 ```mermaid
 graph TD
-    ES[Estate <br/> P=0.25] --> EG[Egna <br/> P=0.1|0.3]
-    ES --> S[Sole <br/> P=0.8|0.4]
-    EG --> L[Letto Presto <br/> P=0.9|0.6]
-    S --> A[Amici Corrono <br/> P=0.6|0.25]
-    L --> C[Corsa]
+    ES["Estate <br/> P=0.25"] --> EG["Egna <br/> P=0.1|0.3"]
+    ES --> S["Sole <br/> P=0.8|0.4"]
+    EG --> L["Letto Presto <br/> P=0.9|0.6"]
+    S --> A["Amici Corrono <br/> P=0.6|0.25"]
+    L --> C["Corsa"]
     A --> C
     S --> C
 ```
@@ -73,6 +73,27 @@ graph TD
 4. **`L` (Letto Presto):** Indica se il ragazzo è andato a dormire presto la sera prima. Dipende dalla città in cui si trova (`EG`).
 5. **`A` (Amici corrono):** Indica se gli amici sono andati a correre. Dipende dal tempo atmosferico (`S`).
 6. **`C` (Corsa):** Nodo target (foglia). Il ragazzo decide se correre in base a 3 fattori: se ha riposato bene (`L`), se ci sono gli amici (`A`) e se c'è il sole (`S`). La combinazione ottimale (`L=V, A=V, S=V`) porta all'80% di probabilità di corsa, mentre la peggiore (`L=F, A=F, S=F`) solo al 5%.
+
+---
+
+## 🛠️ Come Cambiare la Rete Bayesiana
+
+Il simulatore è completamente dinamico: tutti i grafici, i controlli e gli algoritmi matematici si adattano automaticamente alla rete che definisci. 
+
+Per creare una tua rete personalizzata (ad esempio la famosa Rete dell'Allarme di Judea Pearl), ti basta modificare **esclusivamente** il file `src/lib/network.ts`:
+
+1. Apri `src/lib/network.ts` e trova la funzione `getDefaultNetwork()`.
+2. Modifica l'array `nodes` definendo le tue variabili, i loro genitori e le coordinate `x, y` per il disegno:
+   ```typescript
+   const nodes: BayesNode[] = [
+     { id: 'B', type: 'boolean', parents: [], label: 'Burglary', x: 200, y: 50 },
+     { id: 'E', type: 'boolean', parents: [], label: 'Earthquake', x: 400, y: 50 },
+     { id: 'A', type: 'boolean', parents: ['B', 'E'], label: 'Alarm', x: 300, y: 150 },
+     // ...
+   ];
+   ```
+3. Modifica l'oggetto `cpts` inserendo le Tabelle di Probabilità Condizionata per i nuovi nodi.
+4. Salva il file: l'interfaccia utente, i menu a tendina e gli algoritmi si aggiorneranno automaticamente alla nuova topologia!
 
 ---
 
