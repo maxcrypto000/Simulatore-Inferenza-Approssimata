@@ -10,7 +10,8 @@ import WeightContainer from '../components/WeightContainer';
 import LWDashboard from '../components/LWDashboard';
 import CPTViewer from '../components/CPTViewer';
 import SimulationBar from '../components/SimulationBar';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import styles from './page.module.css';
 
 /**
@@ -171,8 +172,12 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <div>
-          <h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <Link href="/guida" className={styles.btnGuide} title="Vai alla guida">
+            <HelpCircle size={20} />
+            Guida
+          </Link>
+          <h1 style={{ textAlign: 'center' }}>
             {mode === 'rejection' ? 'Rejection Sampling' : 'Likelihood Weighting'} <span>Simulatore</span>
           </h1>
         </div>
