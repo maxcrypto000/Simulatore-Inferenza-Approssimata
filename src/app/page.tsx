@@ -28,6 +28,7 @@ function RejectionMode() {
     queryVar,
     queryVal,
     evidences,
+    network,
     generateSingleSample,
     toggleAutoGeneration,
     reset,
@@ -48,6 +49,7 @@ function RejectionMode() {
         isAutoGenerating={isAutoGenerating}
         animState={animState}
         isLW={false}
+        network={network}
       />
 
       {/* Griglia principale a 2 colonne: Grafo a sinistra, Filtro e Statistiche a destra */}
@@ -57,6 +59,7 @@ function RejectionMode() {
             sample={currentSample}
             animState={animState}
             isAutoGenerating={isAutoGenerating}
+            network={network}
           />
         </div>
 
@@ -120,6 +123,7 @@ function LikelihoodMode() {
         isAutoGenerating={isAutoGenerating}
         animState={animState}
         isLW={true}
+        network={network}
       />
 
       {/* Griglia principale a 2 colonne per la modalità LW */}

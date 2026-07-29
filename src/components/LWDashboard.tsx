@@ -8,10 +8,10 @@ import styles from './Dashboard.module.css';
  */
 interface LWDashboardProps {
   stats: LWStats;                                                               // Statistiche di pesatura (iterazioni, pesi totali)
-  queryVar: keyof Sample;                                                       // Variabile query (es. 'S')
+  queryVar: string;                                                       // Variabile query (es. 'S')
   queryVal: boolean;                                                            // Valore richiesto per la query
   evidences: EvidenceConfig[];                                                  // Evidenze forzate
-  setConfig: (qVar: keyof Sample, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback di configurazione
+  setConfig: (qVar: string, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback di configurazione
   isIntegrated?: boolean;                                                       // Flag che indica se Evidential Integration è attivo
   reversals?: { from: string; to: string }[];                                   // Storico degli archi invertiti
   applyEvidenceIntegration?: () => void;                                        // Funzione per applicare l'integrazione

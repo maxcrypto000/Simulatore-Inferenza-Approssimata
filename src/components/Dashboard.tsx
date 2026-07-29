@@ -10,10 +10,10 @@ import styles from './Dashboard.module.css';
  */
 interface DashboardProps {
   stats: SimulationStats;                                                       // Statistiche della simulazione
-  queryVar: keyof Sample;                                                       // Variabile query (es. 'S' per Sole)
+  queryVar: string;                                                       // Variabile query (es. 'S' per Sole)
   queryVal: boolean;                                                            // Valore cercato per la query (true/false)
   evidences: EvidenceConfig[];                                                  // Lista delle evidenze impostate
-  setConfig: (qVar: keyof Sample, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback per modificare la configurazione
+  setConfig: (qVar: string, qVal: boolean, evs: EvidenceConfig[]) => void;// Callback per modificare la configurazione
 }
 
 /**

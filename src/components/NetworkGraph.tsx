@@ -14,41 +14,12 @@ interface NetworkGraphProps {
   animState: AnimationState | 'generating' | 'evaluating' | 'done' | 'idle'; // Stato del ciclo di animazione
   isAutoGenerating: boolean;                                                 // Flag che indica se è attiva la generazione veloce
   mode?: 'rejection' | 'likelihood';                                         // Modalità di inferenza attiva
-  stepWeights?: Partial<Record<keyof Sample, number>>;                       // Pesi intermedi di ogni nodo (per LW)
-  network?: BayesianNetwork;                                                 // Rete Bayesiana dinamica (per Evidential Integration)
+  stepWeights?: Partial<Record<string, number>>;                       // Pesi intermedi di ogni nodo (per LW)
+  network: BayesianNetwork;                                                  // Rete Bayesiana dinamica (per Evidential Integration)
   reversals?: { from: string; to: string }[];                                // Storico archi invertiti da evidenziare
 }
 
-/**
- * Definizione dei nodi (variabili aleatorie) della Rete Bayesiana e delle loro coordinate SVG per la vista grafica.
- * Il grafo ha 4 livelli gerarchici:
- * - Livello 0: ES (Estate)
- * - Livello 1: EG (Egna), S (Sole)
- * - Livello 2: L (Letto presto), A (Amici corrono)
- * - Livello 3: C (Piero corre)
- */
-const NODES = {
-  ES: { id: 'ES', label: 'Estate', x: 300, y: 40 },
-  EG: { id: 'EG', label: 'Egna', x: 150, y: 140 },
-  S: { id: 'S', label: 'Sole', x: 450, y: 140 },
-  L: { id: 'L', label: 'Letto Presto', x: 150, y: 240 },
-  A: { id: 'A', label: 'Amici Corrono', x: 450, y: 240 },
-  C: { id: 'C', label: 'Piero Corre', x: 300, y: 340 },
-};
-
-/**
- * Definizione degli archi diretti (dipendenze condizionali) della Rete Bayesiana.
- * Ogni arco va dal nodo genitore (from) al nodo figlio (to).
- */
-const EDGES = [
-  { from: 'ES', to: 'EG' }, // Egna dipende da Estate
-  { from: 'ES', to: 'S' },  // Sole dipende da Estate
-  { from: 'EG', to: 'L' },  // Letto presto dipende da Egna
-  { from: 'S', to: 'A' },  // Amici corrono dipende da Sole
-  { from: 'L', to: 'C' },  // Piero corre dipende da Letto
-  { from: 'A', to: 'C' },  // Piero corre dipende da Amici
-  { from: 'S', to: 'C' },  // Piero corre dipende dal Sole (arco diretto)
-];
+// Rimosse costanti NODES ed EDGES hardcoded
 
 /**
  * Componente che disegna il grafo orientato aciclico (DAG) della rete bayesiana
@@ -56,10 +27,9 @@ const EDGES = [
  */
 export default function NetworkGraph({ sample, animState, isAutoGenerating, mode = 'rejection', stepWeights, network, reversals }: NetworkGraphProps) {
 
-  // Se viene passata una rete dinamica (es. dopo Evidential Integration), ricaviamo gli archi dai nodi
-  const edgesToRender = network
-    ? network.nodes.flatMap(node => node.parents.map(p => ({ from: p, to: node.id })))
-    : EDGES;
+  // Gli archi vengono ricavati dalla definizione dei genitori di ciascun nodo
+  const initialEdges = network.nodes.flatMap(node => node.parents.map(p => ({ from: p, to: node.id })));
+  const edgesToRender = initialEdges;
 
   /**
    * Restituisce il colore del nodo in base al valore booleano nel campione attuale:
@@ -67,7 +37,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
    * - Rosso (#ef4444) se la variabile è Falsa (false)
    * - Grigio scuro/bluastro se non c'è ancora un campione
    */
-  const getNodeColor = (nodeId: keyof Sample) => {
+  const getNodeColor = (nodeId: string) => {
     if (!sample) return '#334155'; // colore di default (slate-700)
 
     const value = sample[nodeId];
@@ -77,7 +47,7 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
   /**
    * Restituisce l'effetto bagliore (glow / drop-shadow) in base al valore booleano del nodo.
    */
-  const getGlow = (nodeId: keyof Sample) => {
+  const getGlow = (nodeId: string) => {
     if (!sample) return 'none';
     const value = sample[nodeId];
     return value ? '0 0 15px #22c55e' : '0 0 15px #ef4444';
@@ -102,13 +72,13 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
       <svg width="600" height="400" className={styles.svg}>
         {/* 1. Disegno degli archi (frecce di dipendenza condizionale, rossi se invertiti, blu se aggiunti) */}
         {edgesToRender.map((edge, i) => {
-          const from = NODES[edge.from as keyof typeof NODES];
-          const to = NODES[edge.to as keyof typeof NODES];
+          const from = network.nodes.find(n => n.id === edge.from);
+          const to = network.nodes.find(n => n.id === edge.to);
           if (!from || !to) return null;
 
           // Verifica se questo specifico arco è stato invertito dall'Evidential Integration
           const isReversed = reversals?.some(r => (r.to === edge.from && r.from === edge.to) || (r.from === edge.from && r.to === edge.to));
-          const isInitial = EDGES.some(e => e.from === edge.from && e.to === edge.to);
+          const isInitial = initialEdges.some(e => e.from === edge.from && e.to === edge.to);
           const isAdded = !isInitial && !isReversed;
 
           let strokeColor = '#475569';
@@ -131,10 +101,10 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
           return (
             <line
               key={`edge-${edge.from}-${edge.to}-${i}`}
-              x1={from.x}
-              y1={from.y}
-              x2={to.x}
-              y2={to.y}
+              x1={from.x || 0}
+              y1={from.y || 0}
+              x2={to.x || 0}
+              y2={to.y || 0}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               strokeDasharray={strokeDasharray}
@@ -157,30 +127,32 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
         </defs>
 
         {/* 2. Disegno dei nodi e delle relative etichette */}
-        {Object.values(NODES).map((node) => {
-          const color = getNodeColor(node.id as keyof Sample);
-          const glow = getGlow(node.id as keyof Sample);
+        {network.nodes.map((node) => {
+          const color = getNodeColor(node.id);
+          const glow = getGlow(node.id);
+          const x = node.x || 0;
+          const y = node.y || 0;
 
           return (
             <g key={node.id}>
               {/* Tooltip per il Likelihood Weighting: mostra la probabilità condizionata p_i moltiplicata per quel nodo */}
-              {mode === 'likelihood' && sample && animState === 'evaluating' && !isAutoGenerating && stepWeights && stepWeights[node.id as keyof Sample] !== undefined && (
-                <foreignObject x={node.x - 50} y={node.y - 80} width="100" height="50">
+              {mode === 'likelihood' && sample && animState === 'evaluating' && !isAutoGenerating && stepWeights && stepWeights[node.id] !== undefined && (
+                <foreignObject x={x - 50} y={y - 80} width="100" height="50">
                   <motion.div
                     className={styles.lwTooltip}
                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.4, type: 'spring' }}
                   >
-                    x {stepWeights[node.id as keyof Sample]?.toFixed(2)}
+                    x {stepWeights[node.id]?.toFixed(2)}
                   </motion.div>
                 </foreignObject>
               )}
 
               {/* Cerchio del nodo animato con Framer Motion */}
               <motion.circle
-                cx={node.x}
-                cy={node.y}
+                cx={x}
+                cy={y}
                 r="20"
                 fill="#1e293b" // slate-800
                 stroke={color}
@@ -195,8 +167,8 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
 
               {/* Sigla identificativa all'interno del nodo (es. ES, EG, S...) */}
               <text
-                x={node.x}
-                y={node.y}
+                x={x}
+                y={y}
                 textAnchor="middle"
                 dy=".3em"
                 fill="white"
@@ -208,8 +180,8 @@ export default function NetworkGraph({ sample, animState, isAutoGenerating, mode
 
               {/* Etichetta descrittiva esterna (es. Estate, Egna, Sole...) */}
               <text
-                x={node.x}
-                y={node.y - 30}
+                x={x}
+                y={y - 30}
                 textAnchor="middle"
                 fill="#94a3b8" // slate-400
                 fontSize="14"

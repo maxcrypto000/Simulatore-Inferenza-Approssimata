@@ -8,7 +8,7 @@ import {
   Sample,
   EvidenceConfig,
   BayesianNetwork,
-  getInitialPieroNetwork,
+  getDefaultNetwork,
   getTopologicalOrder,
   getProbability,
   flipCoin,
@@ -24,10 +24,10 @@ export type { Sample, EvidenceConfig } from './network';
  * Invece di avere istruzioni hardcoded e ad-hoc per le 6 variabili del problema,
  * l'algoritmo percorre la topologia della rete specificata e consulta in tempo reale le CPT.
  * 
- * @param network La rete bayesiana da campionare (opzionale, default: rete iniziale "Piero corre")
+ * @param network La rete bayesiana da campionare (opzionale, default: rete iniziale)
  * @returns Un oggetto Sample contenente i valori generati per tutti i nodi della rete
  */
-export function generateSample(network: BayesianNetwork = getInitialPieroNetwork()): Sample {
+export function generateSample(network: BayesianNetwork = getDefaultNetwork()): Sample {
   const topOrder = getTopologicalOrder(network);
   const sampleData: Record<string, boolean> = {};
 

@@ -10,7 +10,7 @@ import { Sample } from '../lib/network';
  */
 interface WeightContainerProps {
   weight: number | undefined;                          // Peso finale w calcolato per il campione
-  stepWeights?: Partial<Record<keyof Sample, number>>; // Pesi di step associati alle singole variabili di evidenza
+  stepWeights?: Partial<Record<string, number>>;       // Pesi di step associati alle singole variabili di evidenza
   animState: LWAnimationState;                         // Stato dell'animazione
   isAutoGenerating: boolean;                           // Modalità automatica veloce (10x/sec) attiva
 }

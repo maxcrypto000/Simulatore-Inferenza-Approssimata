@@ -3,7 +3,7 @@ import { LWSampleResult } from '../lib/likelihoodWeighting';
 import { Sample, EvidenceConfig } from '../lib/network';
 import { 
   BayesianNetwork, 
-  getInitialPieroNetwork, 
+  getDefaultNetwork, 
   integrateEvidence, 
   generateDynamicLWSample 
 } from '../lib/evidenceIntegration';
@@ -33,12 +33,15 @@ export function useLikelihoodWeighting() {
   const [animState, setAnimState] = useState<LWAnimationState>('idle');
   
   // Impostazioni della query bayesiana
-  const [queryVar, setQueryVar] = useState<keyof Sample>('S');
+  const defaultQueryVar = getDefaultNetwork().nodes.length > 0 ? getDefaultNetwork().nodes[getDefaultNetwork().nodes.length - 1].id : '';
+  const defaultEvidenceVar = getDefaultNetwork().nodes.length > 1 ? getDefaultNetwork().nodes[0].id : defaultQueryVar;
+  
+  const [queryVar, setQueryVar] = useState<string>(defaultQueryVar);
   const [queryVal, setQueryVal] = useState<boolean>(true);
-  const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: 'C', val: true }]);
+  const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: defaultEvidenceVar, val: true }]);
   
   // Stato dinamico del Grafo e delle CPT (per Evidential Integration)
-  const [network, setNetwork] = useState<BayesianNetwork>(() => getInitialPieroNetwork());
+  const [network, setNetwork] = useState<BayesianNetwork>(() => getDefaultNetwork());
   const [isIntegrated, setIsIntegrated] = useState<boolean>(false);
   const [reversals, setReversals] = useState<{ from: string; to: string }[]>([]);
 
@@ -120,7 +123,7 @@ export function useLikelihoodWeighting() {
    * trasformando la topologia e ricalcolando dinamicamente le CPT.
    */
   const applyEvidenceIntegration = useCallback(() => {
-    const initialNet = getInitialPieroNetwork();
+    const initialNet = getDefaultNetwork();
     const { network: newNet, reversals: newReversals } = integrateEvidence(initialNet, evidences);
     
     setNetwork(newNet);
@@ -138,7 +141,7 @@ export function useLikelihoodWeighting() {
    * Ripristina la topologia e le CPT originali della rete bayesiana.
    */
   const resetNetworkTopology = useCallback(() => {
-    setNetwork(getInitialPieroNetwork());
+    setNetwork(getDefaultNetwork());
     setReversals([]);
     setIsIntegrated(false);
     
@@ -161,13 +164,13 @@ export function useLikelihoodWeighting() {
   /**
    * Aggiorna la configurazione di query ed evidenze e ripristina la simulazione.
    */
-  const setConfig = useCallback((newQueryVar: keyof Sample, newQueryVal: boolean, newEvidences: EvidenceConfig[]) => {
+  const setConfig = useCallback((newQueryVar: string, newQueryVal: boolean, newEvidences: EvidenceConfig[]) => {
     setQueryVar(newQueryVar);
     setQueryVal(newQueryVal);
     setEvidences(newEvidences);
     
     // Se cambiano le evidenze e la rete era integrata, ripristiniamo la rete iniziale per evitare stati incoerenti
-    setNetwork(getInitialPieroNetwork());
+    setNetwork(getDefaultNetwork());
     setReversals([]);
     setIsIntegrated(false);
 

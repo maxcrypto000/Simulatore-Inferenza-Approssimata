@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { generateSample, isSampleAccepted } from '../lib/inference';
-import { Sample, EvidenceConfig } from '../lib/network';
+import { Sample, EvidenceConfig, getDefaultNetwork, BayesianNetwork } from '../lib/network';
 
 /**
  * Statistiche in tempo reale per la simulazione del Rejection Sampling.
@@ -21,6 +21,8 @@ export type AnimationState = 'idle' | 'generating' | 'evaluating' | 'routing' | 
  * Hook custom di React per gestire la logica, le statistiche e le animazioni del Rejection Sampling.
  */
 export function useRejectionSampling() {
+  const [network, setNetwork] = useState<BayesianNetwork>(getDefaultNetwork);
+
   // Stato delle statistiche della simulazione
   const [stats, setStats] = useState<SimulationStats>({
     total: 0,
@@ -30,9 +32,12 @@ export function useRejectionSampling() {
   });
 
   // Configurazione della query: P(queryVar = queryVal | evidences)
-  const [queryVar, setQueryVar] = useState<keyof Sample>('S');
+  const defaultQueryVar = network.nodes.length > 0 ? network.nodes[network.nodes.length - 1].id : '';
+  const defaultEvidenceVar = network.nodes.length > 1 ? network.nodes[0].id : defaultQueryVar;
+  
+  const [queryVar, setQueryVar] = useState<string>(defaultQueryVar);
   const [queryVal, setQueryVal] = useState<boolean>(true);
-  const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: 'C', val: true }]);
+  const [evidences, setEvidences] = useState<EvidenceConfig[]>([{ var: defaultEvidenceVar, val: true }]);
 
   // Stati per la gestione del ciclo automatico e dell'animazione
   const [isAutoGenerating, setIsAutoGenerating] = useState(false);
@@ -138,7 +143,7 @@ export function useRejectionSampling() {
    * Imposta una nuova configurazione per la query e le evidenze.
    * Il cambio di impostazioni provoca un reset automatico delle statistiche per evitare incongruenze.
    */
-  const setConfig = useCallback((newQueryVar: keyof Sample, newQueryVal: boolean, newEvidences: EvidenceConfig[]) => {
+  const setConfig = useCallback((newQueryVar: string, newQueryVal: boolean, newEvidences: EvidenceConfig[]) => {
     setQueryVar(newQueryVar);
     setQueryVal(newQueryVal);
     setEvidences(newEvidences);
@@ -150,6 +155,7 @@ export function useRejectionSampling() {
   }, []);
 
   return {
+    network,
     stats,
     isAutoGenerating,
     currentSample,

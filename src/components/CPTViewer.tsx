@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BayesianNetwork, getInitialPieroNetwork, getTopologicalOrder } from '../lib/network';
+import { BayesianNetwork, getDefaultNetwork, getTopologicalOrder } from '../lib/network';
 import styles from './CPTViewer.module.css';
 
 interface CPTViewerProps {
@@ -15,14 +15,14 @@ const LABELS: Record<string, string> = {
   S: 'Sole',
   L: 'Letto Presto',
   A: 'Amici Corrono',
-  C: 'Piero Corre',
+  C: 'Corsa',
 };
 
 /**
  * Componente per visualizzare le Tabelle di Probabilità Condizionata (CPT) della Rete Bayesiana.
  * Rispecchia dinamicamente la topologia corrente (originale o trasformata dall'Evidential Integration).
  */
-export default function CPTViewer({ network = getInitialPieroNetwork(), isIntegrated = false }: CPTViewerProps) {
+export default function CPTViewer({ network = getDefaultNetwork(), isIntegrated = false }: CPTViewerProps) {
   const topOrder = getTopologicalOrder(network);
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sample, EvidenceConfig } from '../lib/network';
+import { Sample, EvidenceConfig, BayesianNetwork } from '../lib/network';
 import { Play, Pause, StepForward, RotateCcw, Plus, X } from 'lucide-react';
 import styles from './SimulationBar.module.css';
 
@@ -9,19 +9,18 @@ import styles from './SimulationBar.module.css';
  * Proprietà della barra di controllo unificata per la simulazione e selezione di query ed evidenze.
  */
 interface SimulationBarProps {
-  queryVar: keyof Sample;
+  queryVar: string;
   queryVal: boolean;
   evidences: EvidenceConfig[];
-  setConfig: (qVar: keyof Sample, qVal: boolean, evs: EvidenceConfig[]) => void;
+  setConfig: (qVar: string, qVal: boolean, evs: EvidenceConfig[]) => void;
   onGenerateSingle: () => void;
   onToggleAuto: () => void;
   onReset: () => void;
   isAutoGenerating: boolean;
   animState: string;
   isLW?: boolean;
+  network: BayesianNetwork;
 }
-
-const VARIABLES: (keyof Sample)[] = ['ES', 'EG', 'S', 'L', 'A', 'C'];
 
 /**
  * Componente che raggruppa nella prima riga in alto:
@@ -40,7 +39,10 @@ export default function SimulationBar({
   isAutoGenerating,
   animState,
   isLW = false,
+  network,
 }: SimulationBarProps) {
+  const VARIABLES = network.nodes.map(n => n.id);
+
   /**
    * Aggiunge una nuova evidenza alla lista (se non sono state già aggiunte tutte le variabili).
    */
@@ -63,7 +65,7 @@ export default function SimulationBar({
   /**
    * Modifica la variabile o il valore booleano di una specifica evidenza.
    */
-  const handleUpdateEvidence = (index: number, newVar: keyof Sample, newVal: boolean) => {
+  const handleUpdateEvidence = (index: number, newVar: string, newVal: boolean) => {
     const newEvidences = [...evidences];
     newEvidences[index] = { var: newVar, val: newVal };
     setConfig(queryVar, queryVal, newEvidences);
@@ -102,7 +104,7 @@ export default function SimulationBar({
           <span className={styles.label}>Query:</span>
           <select
             value={queryVar}
-            onChange={(e) => setConfig(e.target.value as keyof Sample, queryVal, evidences)}
+            onChange={(e) => setConfig(e.target.value, queryVal, evidences)}
             className={styles.select}
           >
             {VARIABLES.map(v => <option key={v} value={v}>{v}</option>)}
@@ -128,7 +130,7 @@ export default function SimulationBar({
             <div key={index} className={styles.evidenceTag}>
               <select
                 value={ev.var}
-                onChange={(e) => handleUpdateEvidence(index, e.target.value as keyof Sample, ev.val)}
+                onChange={(e) => handleUpdateEvidence(index, e.target.value, ev.val)}
                 className={styles.selectTag}
               >
                 {VARIABLES.map(v => (

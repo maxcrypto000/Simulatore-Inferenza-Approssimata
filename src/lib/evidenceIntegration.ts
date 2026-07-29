@@ -12,14 +12,14 @@ import {
   getCPTKey,
   generateAllAssignments,
   getProbability,
-  getInitialPieroNetwork,
+  getDefaultNetwork,
   getTopologicalOrder
 } from './network';
 import { generateDynamicLWSample } from './likelihoodWeighting';
 
 // Riesportiamo le strutture e funzioni principali per comodità e retrocompatibilità
 export type { BayesNode, BayesCPT, BayesianNetwork };
-export { getInitialPieroNetwork, getTopologicalOrder, generateDynamicLWSample };
+export { getDefaultNetwork, getTopologicalOrder, generateDynamicLWSample };
 
 /**
  * ============================================================================

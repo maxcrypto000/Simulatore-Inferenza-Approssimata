@@ -8,7 +8,7 @@ import {
   Sample, 
   EvidenceConfig,
   BayesianNetwork,
-  getInitialPieroNetwork,
+  getDefaultNetwork,
   getTopologicalOrder,
   getProbability,
   flipCoin 
@@ -19,8 +19,8 @@ import {
  */
 export interface LWSampleResult {
   sample: Sample;                                      // Il campione completo (con nodi evidenza fissati)
-  weight: number;                                      // Il peso globale w calcolato come prodotto delle probabilità delle evidenze
-  stepWeights: Partial<Record<keyof Sample, number>>;  // Dettaglio dei moltiplicatori di peso per singolo nodo (per visualizzazione UI)
+  weight: number;                                      // Il peso accumulato per questo campione: w = Π P(e_i | Genitori(E_i))
+  stepWeights: Partial<Record<string, number>>;  // Dettaglio dei moltiplicatori di peso per singolo nodo (per visualizzazione UI)
 }
 
 /**
@@ -36,12 +36,12 @@ export interface LWSampleResult {
  * L'algoritmo è 100% dinamico e percorre la rete in ordine topologico (Kahn's algorithm).
  * 
  * @param evidences Lista delle evidenze (es. [{ var: 'C', val: true }])
- * @param network La rete bayesiana su cui operare (opzionale, default: rete iniziale "Piero corre")
+ * @param network La rete bayesiana su cui operare (opzionale, default: rete iniziale)
  * @returns Il campione generato, il peso totale calcolato e i pesi intermedi per l'animazione
  */
-export function generateLWSample(evidences: EvidenceConfig[], network: BayesianNetwork = getInitialPieroNetwork()): LWSampleResult {
+export function generateLWSample(evidences: EvidenceConfig[], network: BayesianNetwork = getDefaultNetwork()): LWSampleResult {
   let weight = 1.0;
-  const stepWeights: Partial<Record<keyof Sample, number>> = {};
+  const stepWeights: Partial<Record<string, number>> = {};
   const sampleData: Record<string, boolean> = {};
 
   const topOrder = getTopologicalOrder(network);
@@ -54,8 +54,9 @@ export function generateLWSample(evidences: EvidenceConfig[], network: BayesianN
       // Nodo di evidenza -> fissiamo il valore all'osservazione
       sampleData[nodeId] = ev.val;
       const probVal = ev.val ? pTrue : (1.0 - pTrue);
+      // Aggiorna il peso globale w = w * P(E=e | Genitori(E))
       weight *= probVal;
-      stepWeights[nodeId as keyof Sample] = probVal;
+      stepWeights[nodeId] = probVal;
     } else {
       // Campionamento normale dalla probabilità condizionata (o a priori)
       const val = flipCoin(pTrue);

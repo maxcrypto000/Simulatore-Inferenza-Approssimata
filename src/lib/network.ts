@@ -1,6 +1,6 @@
 /**
  * Definizione della struttura, della topologia dinamica e delle Tabelle di Probabilità
- * Condizionata (CPT) della Rete Bayesiana "Piero corre".
+ * Condizionata (CPT) della Rete Bayesiana di default.
  * 
  * Questo modulo funge da sorgente unica di verità (Single Source of Truth) per tutti gli algoritmi
  * di inferenza (Rejection Sampling, Likelihood Weighting, Evidential Integration).
@@ -11,21 +11,14 @@
  * Definizione della struttura di un campione (Sample) nella Rete Bayesiana.
  * Ogni variabile booleana rappresenta un evento del dominio applicativo.
  */
-export interface Sample {
-  ES: boolean; // Estate: indica se ci troviamo nella stagione estiva (Vero/Falso)
-  EG: boolean; // Egna (città): indica se Piero si trova ad Egna (Vero/Falso)
-  S: boolean;  // Sole: indica se è una giornata soleggiata (Vero/Falso)
-  L: boolean;  // Letto Presto: indica se Piero è andato a letto presto la sera precedente (Vero/Falso)
-  A: boolean;  // Amici corrono: indica se gli amici di Piero sono andati a correre (Vero/Falso)
-  C: boolean;  // Piero Corre: variabile target (evento finale), indica se Piero va a correre (Vero/Falso)
-}
+export type Sample = Record<string, boolean>;
 
 /**
  * Configurazione di una singola evidenza (osservazione/filtro).
  * Specifica quale variabile (var) deve assumere un determinato valore booleano (val).
  */
 export interface EvidenceConfig {
-  var: keyof Sample;
+  var: string;
   val: boolean;
 }
 
@@ -36,6 +29,9 @@ export interface BayesNode {
   id: string;        // Identificativo univoco del nodo (es. 'ES', 'EG', 'S', 'L', 'A', 'C')
   type: 'boolean';   // Tipo di variabile (booleana nel nostro dominio)
   parents: string[]; // Array di ID dei nodi genitori (ordinato alfabeticamente per canonicità)
+  label?: string;    // Etichetta visuale per il grafico
+  x?: number;        // Posizione x nel grafico
+  y?: number;        // Posizione y nel grafico
 }
 
 /**
@@ -168,7 +164,7 @@ export function getTopologicalOrder(network: BayesianNetwork): string[] {
 }
 
 /* ============================================================================
- * VALORI DI DEFAULT DELLA RETE "PIERO CORRE" (CPT DI PARTENZA)
+ * VALORI DI DEFAULT DELLA RETE (CPT DI PARTENZA)
  * ============================================================================ */
 
 export const P_ES = 0.25;
@@ -205,19 +201,19 @@ export const P_C_given_L_A_S = (L: boolean, A: boolean, S: boolean): number => {
 };
 
 /**
- * Restituisce la Rete Bayesiana iniziale "Piero corre" formalizzata nella struttura dati dinamica.
+ * Restituisce la Rete Bayesiana iniziale formalizzata nella struttura dati dinamica.
  * Genera le CPT complete per tutti i nodi.
  * 
  * @returns Oggetto BayesianNetwork con nodi ordinati e tabelle di probabilità
  */
-export function getInitialPieroNetwork(): BayesianNetwork {
+export function getDefaultNetwork(): BayesianNetwork {
   const nodes: BayesNode[] = [
-    { id: 'ES', type: 'boolean', parents: [] },
-    { id: 'EG', type: 'boolean', parents: ['ES'] },
-    { id: 'S',  type: 'boolean', parents: ['ES'] },
-    { id: 'L',  type: 'boolean', parents: ['EG'] },
-    { id: 'A',  type: 'boolean', parents: ['S'] },
-    { id: 'C',  type: 'boolean', parents: ['A', 'L', 'S'] },
+    { id: 'ES', type: 'boolean', parents: [], label: 'Estate', x: 300, y: 40 },
+    { id: 'EG', type: 'boolean', parents: ['ES'], label: 'Egna', x: 150, y: 140 },
+    { id: 'S',  type: 'boolean', parents: ['ES'], label: 'Sole', x: 450, y: 140 },
+    { id: 'L',  type: 'boolean', parents: ['EG'], label: 'Letto Presto', x: 150, y: 240 },
+    { id: 'A',  type: 'boolean', parents: ['S'], label: 'Amici Corrono', x: 450, y: 240 },
+    { id: 'C',  type: 'boolean', parents: ['A', 'L', 'S'], label: 'Corsa', x: 300, y: 340 },
   ];
 
   const cpts: Record<string, BayesCPT> = {

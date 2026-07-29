@@ -51,9 +51,9 @@ L'**Evidential Integration** supera questo limite trasformando dinamicamente la 
 
 ---
 
-## 🏃‍♂️ La Rete Bayesiana: "Piero corre"
+## 🏃‍♂️ La Rete Bayesiana di Esempio
 
-Il modello probabilistico implementato simula la decisione di un ragazzo, **Piero**, di andare a correre. La rete è composta da 6 variabili booleane con le seguenti relazioni di dipendenza condizionale:
+Il modello probabilistico implementato di default simula la decisione di un ragazzo di andare a correre. La rete è composta da 6 variabili booleane con le seguenti relazioni di dipendenza condizionale:
 
 ```mermaid
 graph TD
@@ -61,7 +61,7 @@ graph TD
     ES --> S[Sole <br/> P=0.8|0.4]
     EG --> L[Letto Presto <br/> P=0.9|0.6]
     S --> A[Amici Corrono <br/> P=0.6|0.25]
-    L --> C[Piero Corre]
+    L --> C[Corsa]
     A --> C
     S --> C
 ```
@@ -70,9 +70,9 @@ graph TD
 1. **`ES` (Estate):** Nodo radice. Indica se è la stagione estiva ($P(\text{ES}=\text{Vero}) = 0.25$).
 2. **`EG` (Egna):** Indica se Piero si trova nella cittadina di Egna. Dipende da `ES`.
 3. **`S` (Sole):** Indica se la giornata è soleggiata. Dipende da `ES`.
-4. **`L` (Letto Presto):** Indica se Piero è andato a dormire presto la sera prima. Dipende dalla città in cui si trova (`EG`).
-5. **`A` (Amici corrono):** Indica se gli amici di Piero sono andati a correre. Dipende dal tempo atmosferico (`S`).
-6. **`C` (Piero corre):** Nodo target (foglia). Piero decide se correre in base a 3 fattori: se ha riposato bene (`L`), se ci sono gli amici (`A`) e se c'è il sole (`S`). La combinazione ottimale (`L=V, A=V, S=V`) porta all'80% di probabilità di corsa, mentre la peggiore (`L=F, A=F, S=F`) solo al 5%.
+4. **`L` (Letto Presto):** Indica se il ragazzo è andato a dormire presto la sera prima. Dipende dalla città in cui si trova (`EG`).
+5. **`A` (Amici corrono):** Indica se gli amici sono andati a correre. Dipende dal tempo atmosferico (`S`).
+6. **`C` (Corsa):** Nodo target (foglia). Il ragazzo decide se correre in base a 3 fattori: se ha riposato bene (`L`), se ci sono gli amici (`A`) e se c'è il sole (`S`). La combinazione ottimale (`L=V, A=V, S=V`) porta all'80% di probabilità di corsa, mentre la peggiore (`L=F, A=F, S=F`) solo al 5%.
 
 ---
 
@@ -83,7 +83,7 @@ Il progetto adotta una rigorosa **separazione delle responsabilità (Separation 
 ```text
 src/
 ├── lib/
-│   ├── network.ts              # 🏛️ Sorgente Unica di Verità: strutture dati dinamiche (BayesNode, BayesCPT, BayesianNetwork), CPT di Piero, ordinamento topologico (Kahn) e utility di accesso.
+│   ├── network.ts              # 🏛️ Sorgente Unica di Verità: strutture dati dinamiche (BayesNode, BayesCPT, BayesianNetwork), CPT di default, ordinamento topologico (Kahn) e utility di accesso.
 │   ├── inference.ts            # 🗑️ Motore dinamico di Rejection Sampling (Prior Sampling su topologia e filtro evidenze).
 │   ├── likelihoodWeighting.ts  # ⚖️ Motore dinamico di Likelihood Weighting (campionamento pesato topologico e forzatura evidenze).
 │   └── evidenceIntegration.ts  # ⚡ Motore matematico puro di Arc Reversal (Teorema di Shachter e marginalizzazione di Bayes).
